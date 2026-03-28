@@ -1,0 +1,4 @@
+ticker,company_name,last_updated,l1_roce_3yr,l1_fcf_cumulative,l2_debt_equity,l2_pledging_pct,l2_piotroski,l2_interest_coverage,l3_dcf_bear,l3_dcf_base,l3_dcf_bull,l3_margin_of_safety,l3_ev_ebitda,l4_eps_cagr_3yr,l4_opm_trend,l4_revenue_cagr_3yr
+ASIANPAINT,"Asian Paints Limited",2026-03-27T12:00:00,25.0,1500.0,0.1,0.0,8,25.0,2000,2500,3000,20.0,12.0,15.0,"stable",12.0
+PIDILITIND,"Pidilite Industries Limited",2026-03-27T12:00:00,22.0,1200.0,0.05,0.0,8,30.0,1500,1800,2200,15.0,14.0,18.0,"expanding",15.0
+BAJFINANCE,"Bajaj Finance Limited",2026-03-27T12:00:00,18.0,5000.0,0.5,0.0,7,10.0,6000,8000,10000,25.0,10.0,25.0,"stable",20.0

@@ -1,0 +1,55 @@
+universe:
+  index: "nifty500"
+  min_market_cap_cr: 500
+
+layer1_quality:
+  roce_min_pct: 15.0
+  roce_years: 3
+  fcf_require_positive_cumulative: true
+  fcf_years: 3
+
+layer2_safety:
+  debt_equity_max: 1.0
+  debt_equity_max_high_risk_sectors: 0.5
+  high_risk_sectors: ["realestate", "infrastructure", "nbfc"]
+  promoter_pledging_max_pct: 10.0
+  piotroski_min: 7
+  interest_coverage_min: 3.0
+
+layer3_valuation:
+  margin_of_safety_min_pct: 20.0
+  terminal_growth_rate: 0.03
+  risk_free_rate: 0.075
+  dcf_bear_growth_multiplier: 0.6
+  dcf_bull_growth_multiplier: 1.4
+  dcf_bull_wacc_reduction: 0.01
+  dcf_bear_wacc_addition: 0.02
+  sanity_max_multiple: 3.0   # Flag if DCF > 300% of current price
+  sanity_min_multiple: 0.1   # Flag if DCF < 10% of current price
+  ev_ebitda_max: 15.0
+
+layer4_growth:
+  eps_cagr_min_pct: 12.0
+  eps_cagr_years: 3
+  revenue_cagr_min_pct: 10.0
+  opm_max_contraction_pct: 2.0   # Allow max 2% OPM decline
+
+layer5_momentum:
+  ema_short: 20
+  ema_long: 50
+  ema_trend_filter: 200
+  rsi_min: 50
+  rsi_max_entry: 70            # Avoid overbought entries
+  rsi_sweet_spot_max: 65
+  volume_ratio_min: 1.5
+  high_52w_buffer_pct: 5.0    # Avoid stocks within 5% of 52w high
+
+risk_controls:
+  max_position_pct: 5.0
+  max_sector_pct: 30.0
+  stop_loss_pct: 15.0
+  trailing_stop_pct: 20.0
+
+data_quality:
+  max_null_core_metrics: 2
+  staleness_days: 7
