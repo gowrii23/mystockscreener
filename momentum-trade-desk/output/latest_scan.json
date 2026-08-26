@@ -1,5 +1,5 @@
 {
-  "scanDate": "2026-08-26 16:48:45 IST",
+  "scanDate": "2026-08-26 16:49:23 IST",
   "symbolsScanned": 2839,
   "tradingDaysLoaded": 63,
   "nifty": {
@@ -7,13 +7,13 @@
     "sma50": 24207.94,
     "sma150": 24239.52,
     "sma200": 24669.55,
-    "high52": NaN,
-    "low52": NaN,
+    "high52": 26328.55,
+    "low52": 22331.4,
     "regime": "BEARISH",
     "momentumPass": false,
     "trendChecks": {
       "priceAboveSMAs": false,
-      "within25PctOfHigh": false,
+      "within25PctOfHigh": true,
       "above30PctOfLow": false,
       "sma200Rising": false
     },
