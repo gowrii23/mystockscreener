@@ -1,2 +1,5 @@
 run_date,run_type,setup_qualified,conviction_score,regime_status,gap_points,blackout_flag,kill_switch_triggered,action,state,notes
-2026-08-27,paper,False,3/4,NEUTRAL,69.85,True,True,NO_TRADE,WAITING_FOR_SETUP,Paper mode only — no broker orders placed; Confirm manual gut check before any live entry; Zero trades per week is a valid outcome
+2026-08-24,paper,True,4/4,NEUTRAL,69.85,False,False,QUALIFIED_SETUP,QUALIFIED,Regime neutral; no blackout; ladder proposed
+2026-08-25,paper,True,4/4,NEUTRAL,69.85,False,False,QUALIFIED_SETUP,QUALIFIED,Regime neutral; no blackout; ladder proposed
+2026-08-26,paper,False,3/4,NEUTRAL,69.85,True,True,NO_TRADE,WAITING_FOR_SETUP,Expiry-week gamma zone; kill-switch active
+2026-08-27,paper,False,3/4,NEUTRAL,69.85,True,True,NO_TRADE,WAITING_FOR_SETUP,Paper mode — no broker orders; manual gut check required

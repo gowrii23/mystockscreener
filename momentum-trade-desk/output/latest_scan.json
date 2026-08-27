@@ -1,12 +1,12 @@
 {
-  "scanDate": "2026-08-26 16:49:23 IST",
+  "scanDate": "2026-08-27 18:06:29 IST",
   "symbolsScanned": 2839,
   "tradingDaysLoaded": 63,
   "nifty": {
-    "spot": 24207.75,
-    "sma50": 24207.94,
-    "sma150": 24239.52,
-    "sma200": 24669.55,
+    "spot": 24090.85,
+    "sma50": 24208.04,
+    "sma150": 24228.83,
+    "sma200": 24662.01,
     "high52": 26328.55,
     "low52": 22331.4,
     "regime": "BEARISH",
@@ -20,7 +20,7 @@
     "otmCeRecommendation": {
       "signal": "SKIP",
       "rationale": "Nifty below 200 SMA \u2014 bearish regime. Avoid new long CE entries.",
-      "spot": 24207.75
+      "spot": 24090.85
     }
   },
   "summary": {
