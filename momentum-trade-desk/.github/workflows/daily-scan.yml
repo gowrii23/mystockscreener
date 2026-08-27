@@ -49,29 +49,32 @@ jobs:
         run: |
           BACKFILL="${{ github.event.inputs.backfill_days || '0' }}"
           if [ "$BACKFILL" != "0" ] && [ -n "$BACKFILL" ]; then
-            python fetch_bhavcopy.py --backfill "$BACKFILL"
+            python3 fetch_bhavcopy.py --backfill "$BACKFILL"
           else
             COUNT=$(ls bhavcopy_data/*.csv 2>/dev/null | wc -l || echo 0)
             if [ "$COUNT" -lt 60 ]; then
               echo "Less than 60 trading days cached — backfilling 200 calendar days"
-              python fetch_bhavcopy.py --backfill 200
+              python3 fetch_bhavcopy.py --backfill 200
             else
-              python fetch_bhavcopy.py
+              python3 fetch_bhavcopy.py
             fi
           fi
 
       - name: Run momentum scan
-        run: python scan_momentum.py
+        run: python3 scan_momentum.py
+
+      - name: Run Nifty conviction check (EOD)
+        run: python3 scan_nifty_conviction.py
 
       - name: Commit scan results
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add output/
+          git add output/ data/conviction_results.csv
           if git diff --staged --quiet; then
             echo "No scan output changes to commit"
           else
-            git commit -m "chore: update momentum scan $(date -u +%Y-%m-%d)"
+            git commit -m "chore: update scans $(date -u +%Y-%m-%d)"
             git push
           fi
 

@@ -1,0 +1,87 @@
+{
+  "scanDate": "2026-08-27 17:59:14 IST",
+  "runType": "paper",
+  "capital": {
+    "total": 1000000,
+    "maxDeployed": 250000,
+    "coreBuffer": 600000,
+    "reserve": 150000
+  },
+  "checks": {
+    "regime": {
+      "pass": true,
+      "detail": "Trend=NEUTRAL, IV pct=22.0 (need 15-75)"
+    },
+    "event": {
+      "pass": false,
+      "detail": "Blackout or expiry-week gamma zone active",
+      "upcomingBlackouts": []
+    },
+    "premiumQuality": {
+      "pass": true,
+      "detail": "Ladder targets \u2265\u20b940/leg \u2014 confirm on broker before entry",
+      "requiresLiveVerify": true
+    },
+    "riskRewardExplicit": {
+      "pass": true,
+      "detail": "Auto-generated risk plan attached",
+      "plan": {
+        "maxLossPerTrade": "Premium at risk + tail beyond hedge; cap at 4% of \u20b910L/day",
+        "adjustmentTrigger": "Nifty moves 20/15/10 pts (Mon/Tue/Wed) \u2014 Saviour-style hedge",
+        "hardExit": "Close all 1 day before expiry; no new naked sells after Wed expiry week",
+        "bufferRule": "Stop new entries if buffer < \u20b94.5L"
+      }
+    },
+    "manualGutCheck": {
+      "pass": false,
+      "detail": "Requires human confirmation \u2014 not boredom/FOMO trade",
+      "requiresManual": true
+    }
+  },
+  "autoScore": 3,
+  "autoTotal": 4,
+  "fullScore": 3,
+  "maxScore": 5,
+  "setupQualified": false,
+  "action": "NO_TRADE",
+  "state": "WAITING_FOR_SETUP",
+  "killSwitches": {
+    "triggered": true,
+    "triggers": [
+      "expiry_week_gamma_zone"
+    ],
+    "dailyLossKillPct": 4.0
+  },
+  "gap": {
+    "prevClose": 24207.75,
+    "todayOpen": 24277.6,
+    "lastClose": 24090.85,
+    "gapPoints": 69.85,
+    "gapPct": 0.29,
+    "absGap": 69.85,
+    "needsReview": false,
+    "killZone": false,
+    "note": "Uses Nifty daily open vs prior close; replace with GIFT Nifty for true pre-market."
+  },
+  "regime": {
+    "status": "NEUTRAL",
+    "spot": 24090.85,
+    "sma50": 24208.04,
+    "sma200": 24662.01,
+    "distFrom200Pct": -2.32,
+    "shortVolTrendOk": true,
+    "iv": {
+      "current": 11.07,
+      "percentile": 22.0,
+      "ok": true,
+      "band": "15-75"
+    },
+    "shortVolOk": true
+  },
+  "proposal": null,
+  "notes": [
+    "Paper mode only \u2014 no broker orders placed",
+    "Confirm manual gut check before any live entry",
+    "Zero trades per week is a valid outcome"
+  ]
+}

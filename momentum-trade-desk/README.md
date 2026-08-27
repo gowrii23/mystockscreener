@@ -8,15 +8,26 @@ Automatically fetches NSE bhavcopy data via GitHub Actions, ranks momentum stock
 
 1. **`fetch_bhavcopy.py`** — Downloads NSE's free daily bhavcopy (end-of-day prices for all listed stocks)
 2. **`scan_momentum.py`** — Scans bhavcopy history for top momentum stocks and checks Nifty 50 momentum for OTM CE entry ideas
-3. **`index.html`** — Browser trade desk to view daily scan results, import bhavcopy, and score individual candidates with news/fundamentals
+3. **`scan_nifty_conviction.py`** — Nifty short-vol conviction checklist (paper mode, ₹10L capital model)
+4. **`index.html`** — Browser trade desk with momentum scan + conviction panel
+
+## Scheduled jobs (GitHub Actions — free on public repos)
+
+| Workflow | Schedule | What it does |
+|----------|----------|--------------|
+| **Daily Momentum Scan** | Mon–Fri ~7:00 PM IST | Fetch bhavcopy → momentum scan → conviction check → commit → deploy Pages |
+| **Pre-Market Conviction Check** | Mon–Fri ~8:45 AM IST | Run conviction checklist → append audit log |
+
+Both are **paper mode only** — they propose setups, never place broker orders.
 
 ## Quick start (local)
 
 ```bash
 pip install -r requirements.txt
-python fetch_bhavcopy.py --backfill 200   # ~3 min, builds SMA/RS history
-python scan_momentum.py                   # writes output/latest_scan.json
-python -m http.server 8080                # open http://localhost:8080
+python3 fetch_bhavcopy.py --backfill 200   # ~3 min, builds SMA/RS history
+python3 scan_momentum.py                   # writes output/latest_scan.json
+python3 scan_nifty_conviction.py           # writes output/nifty_setup.json
+python3 -m http.server 8080                # open http://localhost:8080
 ```
 
 ## GitHub deployment
@@ -73,9 +84,14 @@ See `docs/momentum-trading-rules.md` for the full rule set (position sizing, IV 
 
 | File | Description |
 |------|-------------|
-| `output/latest_scan.json` | Full scan results (Nifty + top stocks) |
+| `output/latest_scan.json` | Full momentum scan (Nifty + top stocks) |
+| `output/nifty_setup.json` | Latest conviction check + proposed ladder |
+| `data/conviction_results.csv` | Append-only audit log (one row per run) |
+| `data/blackout_calendar.csv` | Event blackout dates — edit to add RBI/Budget/Fed |
 | `output/latest_scan.csv` | Top momentum stocks as CSV |
 | `bhavcopy_data/` | Cached daily NSE bhavcopy (gitignored locally, cached in Actions) |
+
+See `docs/nifty-options-business-plan.md` for the full conviction framework (₹10L capital, kill-switches, discipline log).
 
 ## Disclaimer
 

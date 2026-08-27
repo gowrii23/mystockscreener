@@ -81,6 +81,10 @@
   .scan-meta{font-size:12px;color:var(--muted);line-height:1.7;}
   .scan-meta strong{color:var(--text);}
   .strike{font-family:var(--display);font-size:18px;color:var(--gold);margin:6px 0;}
+  .checklist{margin:10px 0 0;padding:0;list-style:none;}
+  .checklist li{font-size:12px;padding:4px 0;color:var(--muted);}
+  .checklist li.pass{color:var(--buy);}
+  .checklist li.fail{color:var(--skip);}
 </style>
 </head>
 <body>
@@ -91,6 +95,13 @@
 </header>
 
 <main>
+  <section class="panel">
+    <h2>Nifty Conviction Check — Short-Vol Setup (Paper)</h2>
+    <div class="hint">Runs pre-market (8:45 AM IST) and after EOD via GitHub Actions. Paper mode only — proposes setups, does not place orders. Capital model: ₹10L fixed.</div>
+    <div id="convictionScan"><p class="empty">Loading conviction check...</p></div>
+    <div class="actions"><button class="ghost" id="refreshConviction">Refresh Conviction</button></div>
+  </section>
+
   <section class="panel">
     <h2>Daily Scan — Nifty OTM CE &amp; Top Momentum Stocks</h2>
     <div class="hint">Auto-updated by GitHub Actions after market close. Loads <code>output/latest_scan.json</code> from this repo.</div>
@@ -691,6 +702,55 @@ async function loadDailyScan(){
 
 document.getElementById('refreshScan').addEventListener('click', loadDailyScan);
 
+async function loadConvictionScan(){
+  const el = document.getElementById('convictionScan');
+  try{
+    const res = await fetch('output/nifty_setup.json?_=' + Date.now());
+    if(!res.ok) throw new Error('Conviction check not run yet — trigger GitHub Actions.');
+    const data = await res.json();
+    const action = data.action || 'NO_TRADE';
+    const checks = data.checks || {};
+    const checkList = Object.entries(checks).map(([k,v]) =>
+      `<li class="${v.pass ? 'pass':'fail'}">${k}: ${v.pass ? '✓' : '✗'} — ${v.detail || ''}</li>`
+    ).join('');
+    const kills = (data.killSwitches?.triggers || []).join(', ') || 'none';
+    const legs = (data.proposal?.legs || []).slice(0,6).map(l =>
+      `<tr><td>${l.instrument}</td><td>≥₹${l.targetPremium}</td></tr>`
+    ).join('');
+
+    el.innerHTML = `
+      <div class="scan-grid">
+        <div class="scan-card">
+          <h3>Conviction Score</h3>
+          <div class="scan-meta">
+            <div>As of: <strong>${data.scanDate || '—'}</strong></div>
+            <div>State: <strong>${data.state || '—'}</strong></div>
+            <div>Auto score: <strong>${data.autoScore ?? '—'}/${data.autoTotal ?? 4}</strong> (manual gut check required for 5/5)</div>
+            <div class="strike">${action}</div>
+            <span class="verdict ${action === 'QUALIFIED_SETUP' ? 'BUY' : action === 'WATCH' ? 'WATCH' : 'SKIP'}">${action}</span>
+            <p style="margin-top:10px">Kill switches: ${kills}</p>
+            <ul class="checklist">${checkList}</ul>
+          </div>
+        </div>
+        <div class="scan-card">
+          <h3>Proposed Ladder (if qualified)</h3>
+          <div class="scan-meta">
+            <div>Spot: <strong>${data.regime?.spot ?? '—'}</strong> | Regime: <strong>${data.regime?.status ?? '—'}</strong></div>
+            <div>Gap: <strong>${data.gap?.gapPoints ?? '—'}</strong> pts</div>
+            <div>First entry budget: <strong>₹${data.proposal?.firstEntryBudget?.toLocaleString('en-IN') ?? '—'}</strong></div>
+            <table style="margin-top:10px"><thead><tr><th>Leg</th><th>Min premium</th></tr></thead>
+            <tbody>${legs || '<tr><td colspan="2" class="empty">No ladder — setup not qualified</td></tr>'}</tbody></table>
+            ${data.proposal?.tailHedge ? `<p style="margin-top:8px">Tail hedge: ${data.proposal.tailHedge.instrument}</p>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }catch(err){
+    el.innerHTML = `<p class="empty status err">${err.message}</p>`;
+  }
+}
+
+document.getElementById('refreshConviction').addEventListener('click', loadConvictionScan);
+
 document.getElementById('bhavFile').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if(file) handleBhavFile(file);
@@ -700,6 +760,7 @@ document.getElementById('bhavFile').addEventListener('change', (e) => {
 loadCandidates();
 loadPriceHistory();
 loadDailyScan();
+loadConvictionScan();
 </script>
 </body>
 </html>
