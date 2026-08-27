@@ -2,6 +2,21 @@
 
 This project is a multi-layered stock filtering and analysis tool designed to identify investment opportunities based on a series of fundamental and technical checks. It is composed of two main data processing engines and a web-based dashboard for visualization.
 
+## Momentum Trade Desk (live)
+
+**Web app:** https://gowrii23.github.io/mystockscreener/
+
+Nifty momentum scan + conviction-based short-vol checklist (paper mode). Auto-updated via GitHub Actions cron (free on public repos).
+
+```
+momentum-trade-desk/
+├── index.html              # Trade desk UI
+├── scan_momentum.py        # EOD momentum + OTM CE signals
+├── scan_nifty_conviction.py # Pre-market / EOD conviction check
+├── data/conviction_results.csv  # Append-only audit log
+└── output/latest_scan.json, nifty_setup.json
+```
+
 ## How it Works
 
 The workflow is divided into three main stages:
