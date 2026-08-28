@@ -1,5 +1,5 @@
 {
-  "scanDate": "2026-08-27 18:06:30 IST",
+  "scanDate": "2026-08-28 15:24:18 IST",
   "runType": "paper",
   "capital": {
     "total": 1000000,
@@ -10,11 +10,11 @@
   "checks": {
     "regime": {
       "pass": true,
-      "detail": "Trend=NEUTRAL, IV pct=22.0 (need 15-75)"
+      "detail": "Trend=NEUTRAL, IV pct=16.6 (need 15-75)"
     },
     "event": {
-      "pass": false,
-      "detail": "Blackout or expiry-week gamma zone active",
+      "pass": true,
+      "detail": "No blackout / expiry gamma zone",
       "upcomingBlackouts": []
     },
     "premiumQuality": {
@@ -38,47 +38,114 @@
       "requiresManual": true
     }
   },
-  "autoScore": 3,
+  "autoScore": 4,
   "autoTotal": 4,
-  "fullScore": 3,
+  "fullScore": 4,
   "maxScore": 5,
-  "setupQualified": false,
-  "action": "NO_TRADE",
-  "state": "WAITING_FOR_SETUP",
+  "setupQualified": true,
+  "action": "QUALIFIED_SETUP",
+  "state": "QUALIFIED",
   "killSwitches": {
-    "triggered": true,
-    "triggers": [
-      "expiry_week_gamma_zone"
-    ],
+    "triggered": false,
+    "triggers": [],
     "dailyLossKillPct": 4.0
   },
   "gap": {
-    "prevClose": 24207.75,
-    "todayOpen": 24277.6,
-    "lastClose": 24090.85,
-    "gapPoints": 69.85,
-    "gapPct": 0.29,
-    "absGap": 69.85,
+    "prevClose": 24090.85,
+    "todayOpen": 24122.6,
+    "lastClose": 24175.65,
+    "gapPoints": 31.75,
+    "gapPct": 0.13,
+    "absGap": 31.75,
     "needsReview": false,
     "killZone": false,
     "note": "Uses Nifty daily open vs prior close; replace with GIFT Nifty for true pre-market."
   },
   "regime": {
     "status": "NEUTRAL",
-    "spot": 24090.85,
-    "sma50": 24208.04,
-    "sma200": 24662.01,
-    "distFrom200Pct": -2.32,
+    "spot": 24175.65,
+    "sma50": 24208.19,
+    "sma200": 24655.34,
+    "distFrom200Pct": -1.95,
     "shortVolTrendOk": true,
     "iv": {
-      "current": 11.07,
-      "percentile": 22.0,
+      "current": 10.68,
+      "percentile": 16.6,
       "ok": true,
       "band": "15-75"
     },
     "shortVolOk": true
   },
-  "proposal": null,
+  "proposal": {
+    "spot": 24175.65,
+    "firstEntryBudget": 75000,
+    "maxDeployed": 250000,
+    "estimatedMarginPerLot": 85000,
+    "suggestedLotsPerLeg": 1,
+    "maxLotsFirstEntry": 1,
+    "legs": [
+      {
+        "instrument": "NIFTY 24000 PE",
+        "strike": 24000,
+        "type": "PE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 23950 PE",
+        "strike": 23950,
+        "type": "PE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 23900 PE",
+        "strike": 23900,
+        "type": "PE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 23850 PE",
+        "strike": 23850,
+        "type": "PE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 23800 PE",
+        "strike": 23800,
+        "type": "PE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 24400 CE",
+        "strike": 24400,
+        "type": "CE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 24450 CE",
+        "strike": 24450,
+        "type": "CE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 24500 CE",
+        "strike": 24500,
+        "type": "CE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      }
+    ],
+    "tailHedge": {
+      "instrument": "NIFTY 23700 PE (buy)",
+      "note": "Far OTM protective put \u2014 insurance, not profit center"
+    }
+  },
   "notes": [
     "Paper mode only \u2014 no broker orders placed",
     "Confirm manual gut check before any live entry",
