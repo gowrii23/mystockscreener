@@ -85,6 +85,14 @@
   .checklist li{font-size:12px;padding:4px 0;color:var(--muted);}
   .checklist li.pass{color:var(--buy);}
   .checklist li.fail{color:var(--skip);}
+  .outcome{font-family:var(--display);font-weight:700;font-size:11px;padding:4px 9px;border-radius:3px;letter-spacing:0.5px;display:inline-block;}
+  .outcome.PROFIT{background:rgba(63,174,118,0.15);color:var(--buy);}
+  .outcome.LOSS{background:rgba(193,85,74,0.15);color:var(--skip);}
+  .outcome.NEUTRAL{background:rgba(217,164,65,0.15);color:var(--watch);}
+  .summary-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;}
+  .summary-chip{background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:10px 14px;min-width:110px;}
+  .summary-chip .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;}
+  .summary-chip .value{font-family:var(--display);font-size:18px;margin-top:4px;}
 </style>
 </head>
 <body>
@@ -95,6 +103,13 @@
 </header>
 
 <main>
+  <section class="panel">
+    <h2>Trade Logger — Predict Today, Validate Tomorrow</h2>
+    <div class="hint">When conviction returns <code>QUALIFIED_SETUP</code>, the ladder is saved as a prediction. Next trading day EOD, GitHub Actions validates Nifty O/H/L/C and logs <strong>PROFIT</strong>, <strong>LOSS</strong>, or <strong>NEUTRAL</strong> (±₹1,500 band) to <code>data/trade_log.csv</code>.</div>
+    <div id="tradeLog"><p class="empty">Loading trade log...</p></div>
+    <div class="actions"><button class="ghost" id="refreshTradeLog">Refresh Log</button></div>
+  </section>
+
   <section class="panel">
     <h2>Nifty Conviction Check — Short-Vol Setup (Paper)</h2>
     <div class="hint">Runs pre-market (8:45 AM IST) and after EOD via GitHub Actions. Paper mode only — proposes setups, does not place orders. Capital model: ₹10L fixed.</div>
@@ -751,6 +766,72 @@ async function loadConvictionScan(){
 
 document.getElementById('refreshConviction').addEventListener('click', loadConvictionScan);
 
+function formatInr(n){
+  const v = Number(n);
+  if(Number.isNaN(v)) return '—';
+  return '₹' + v.toLocaleString('en-IN', {maximumFractionDigits:0});
+}
+
+async function loadTradeLog(){
+  const el = document.getElementById('tradeLog');
+  try{
+    const res = await fetch('output/trade_log.json?_=' + Date.now());
+    if(!res.ok) throw new Error('Trade log not available yet — run EOD workflow after a QUALIFIED_SETUP day.');
+    const data = await res.json();
+    const s = data.summary || {};
+    const pending = data.pending || [];
+    const trades = data.trades || [];
+
+    const pendingHtml = pending.length ? `
+      <div class="scan-card" style="margin-bottom:14px">
+        <h3>Pending validation</h3>
+        <table>
+          <thead><tr><th>Predicted</th><th>Validates on</th><th>Spot</th><th>Legs</th></tr></thead>
+          <tbody>${pending.map(p => `
+            <tr>
+              <td>${p.predictionDate}</td>
+              <td>${p.validateOn}</td>
+              <td>${p.spot ?? '—'}</td>
+              <td>${p.legsCount ?? '—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>` : '';
+
+    el.innerHTML = `
+      <div class="summary-row">
+        <div class="summary-chip"><div class="label">Trades</div><div class="value">${s.totalTrades ?? 0}</div></div>
+        <div class="summary-chip"><div class="label">Profit</div><div class="value" style="color:var(--buy)">${s.profit ?? 0}</div></div>
+        <div class="summary-chip"><div class="label">Loss</div><div class="value" style="color:var(--skip)">${s.loss ?? 0}</div></div>
+        <div class="summary-chip"><div class="label">Neutral</div><div class="value" style="color:var(--watch)">${s.neutral ?? 0}</div></div>
+        <div class="summary-chip"><div class="label">Total P&L</div><div class="value">${formatInr(s.totalPnl)}</div></div>
+      </div>
+      ${pendingHtml}
+      <table>
+        <thead><tr>
+          <th>Predicted</th><th>Validated</th><th>Entry</th><th>Close</th><th>Range</th><th>Premium</th><th>P&L</th><th>Outcome</th>
+        </tr></thead>
+        <tbody>${trades.length ? trades.map(t => `
+          <tr>
+            <td>${t.prediction_date}</td>
+            <td>${t.validate_date}</td>
+            <td>${t.entry_spot}</td>
+            <td>${t.exit_close}</td>
+            <td>${t.day_low} – ${t.day_high}</td>
+            <td>${formatInr(t.premium_collected)}</td>
+            <td>${formatInr(t.pnl_inr)}</td>
+            <td><span class="outcome ${t.outcome}">${t.outcome}</span></td>
+          </tr>`).join('') : '<tr><td colspan="8" class="empty">No validated trades yet.</td></tr>'}
+        </tbody>
+      </table>
+      <p class="badge" style="margin-top:10px">Updated: ${data.updatedAt || '—'}</p>`;
+  }catch(err){
+    el.innerHTML = `<p class="empty status err">${err.message}</p>`;
+  }
+}
+
+document.getElementById('refreshTradeLog').addEventListener('click', loadTradeLog);
+
 document.getElementById('bhavFile').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if(file) handleBhavFile(file);
@@ -761,6 +842,7 @@ loadCandidates();
 loadPriceHistory();
 loadDailyScan();
 loadConvictionScan();
+loadTradeLog();
 </script>
 </body>
 </html>

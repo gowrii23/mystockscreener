@@ -19,6 +19,7 @@ from typing import Any
 from strategy.config import OUTPUT_JSON, RESULTS_CSV
 from strategy.conviction import evaluate
 from strategy.run_store import save_run
+from strategy.trade_logger import save_prediction
 
 CSV_HEADER = [
     "run_date",
@@ -96,6 +97,10 @@ def main() -> None:
     run_kind = os.environ.get("RUN_KIND", "premarket")
     saved = save_run(run_kind, output)
     print(f"[ok] saved run snapshot {saved}")
+
+    pred_path = save_prediction(output)
+    if pred_path:
+        print(f"[ok] saved pending prediction for next-day validation → {pred_path}")
 
     append_result(
         {

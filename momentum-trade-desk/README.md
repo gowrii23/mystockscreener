@@ -9,14 +9,25 @@ Automatically fetches NSE bhavcopy data via GitHub Actions, ranks momentum stock
 1. **`fetch_bhavcopy.py`** — Downloads NSE's free daily bhavcopy (end-of-day prices for all listed stocks)
 2. **`scan_momentum.py`** — Scans bhavcopy history for top momentum stocks and checks Nifty 50 momentum for OTM CE entry ideas
 3. **`scan_nifty_conviction.py`** — Nifty short-vol conviction checklist (paper mode, ₹10L capital model)
-4. **`index.html`** — Browser trade desk with momentum scan + conviction panel
+4. **`validate_trade.py`** — Validates yesterday's `QUALIFIED_SETUP` against today's Nifty session; logs PROFIT / LOSS / NEUTRAL
+5. **`index.html`** — Browser trade desk with momentum scan + conviction panel + trade log
+
+## Predict → validate → log (trade logger)
+
+| Step | When | What happens |
+|------|------|--------------|
+| **Predict** | Pre-market or EOD when `QUALIFIED_SETUP` | Ladder saved to `data/predictions/YYYY-MM-DD.json` |
+| **Validate** | Next trading day EOD (before new scans) | `validate_trade.py` fetches Nifty O/H/L/C, estimates P&L, writes outcome |
+| **Log** | After validation | Row appended to `data/trade_log.csv` + `output/trade_log.json` |
+
+Outcomes use a ±₹1,500 neutral band: above = **PROFIT**, below = **LOSS**, within = **NEUTRAL**. P&L assumes ~20% same-day theta when all short legs stay OTM at close; otherwise intrinsic at close minus hedge cost.
 
 ## Scheduled jobs (GitHub Actions — free on public repos)
 
 | Workflow | Schedule | What it does |
 |----------|----------|--------------|
-| **Daily Momentum Scan** | Mon–Fri ~7:00 PM IST | Fetch bhavcopy → momentum scan → conviction check → commit → deploy Pages |
-| **Pre-Market Conviction Check** | Mon–Fri ~8:45 AM IST | Run conviction checklist → append audit log |
+| **Daily Momentum Scan** | Mon–Fri ~7:00 PM IST | Validate prior prediction → fetch bhavcopy → momentum + conviction scans → deploy Pages |
+| **Pre-Market Conviction Check** | Mon–Fri ~8:45 AM IST | Run conviction checklist → save prediction if qualified → deploy Pages |
 
 Both are **paper mode only** — they propose setups, never place broker orders.
 
@@ -27,6 +38,7 @@ pip install -r requirements.txt
 python3 fetch_bhavcopy.py --backfill 200   # ~3 min, builds SMA/RS history
 python3 scan_momentum.py                   # writes output/latest_scan.json
 python3 scan_nifty_conviction.py           # writes output/nifty_setup.json
+python3 validate_trade.py                  # validate prior QUALIFIED_SETUP (run EOD next day)
 python3 -m http.server 8080                # open http://localhost:8080
 ```
 
@@ -86,6 +98,9 @@ See `docs/momentum-trading-rules.md` for the full rule set (position sizing, IV 
 |------|-------------|
 | `output/latest_scan.json` | Full momentum scan (Nifty + top stocks) |
 | `output/nifty_setup.json` | Latest conviction check + proposed ladder |
+| `output/trade_log.json` | Validated trades + pending predictions (for UI) |
+| `data/trade_log.csv` | Append-only validated trade outcomes |
+| `data/predictions/` | One JSON per day when `QUALIFIED_SETUP` (awaiting next-day validation) |
 | `data/conviction_results.csv` | Append-only audit log (one row per run) |
 | `data/blackout_calendar.csv` | Event blackout dates — edit to add RBI/Budget/Fed |
 | `output/latest_scan.csv` | Top momentum stocks as CSV |

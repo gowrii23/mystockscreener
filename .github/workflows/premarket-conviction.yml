@@ -36,7 +36,10 @@ jobs:
       - name: Restore run history cache
         uses: actions/cache@v4
         with:
-          path: momentum-trade-desk/data/runs
+          path: |
+            momentum-trade-desk/data/runs
+            momentum-trade-desk/data/predictions
+            momentum-trade-desk/data/trade_log.csv
           key: desk-${{ github.run_id }}
           restore-keys: desk-
 
@@ -60,5 +63,8 @@ jobs:
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: momentum-trade-desk/data/runs
+          path: |
+            momentum-trade-desk/data/runs
+            momentum-trade-desk/data/predictions
+            momentum-trade-desk/data/trade_log.csv
           key: desk-${{ github.run_id }}
