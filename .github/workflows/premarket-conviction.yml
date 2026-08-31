@@ -22,6 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
@@ -36,18 +37,24 @@ jobs:
       - name: Commit conviction log
         working-directory: ${{ github.workspace }}
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          mkdir -p /tmp/scan-artifacts/output /tmp/scan-artifacts/data
+          cp momentum-trade-desk/output/nifty_setup.json /tmp/scan-artifacts/output/
+          cp momentum-trade-desk/data/conviction_results.csv /tmp/scan-artifacts/data/
+
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+          cp /tmp/scan-artifacts/output/nifty_setup.json momentum-trade-desk/output/
+          cp /tmp/scan-artifacts/data/conviction_results.csv momentum-trade-desk/data/
+
           git add momentum-trade-desk/output/nifty_setup.json momentum-trade-desk/data/conviction_results.csv
           if git diff --staged --quiet; then
             echo "No changes to commit"
             exit 0
           fi
           git commit -m "chore: pre-market conviction $(date -u +%Y-%m-%d)"
-          for attempt in 1 2 3 4 5; do
-            git pull --rebase origin main && git push origin main && exit 0
-            echo "Push failed (attempt $attempt), retrying in ${attempt}0s..."
-            sleep $((attempt * 10))
-          done
-          echo "Failed to push after 5 attempts"
-          exit 1
+          git push origin main
