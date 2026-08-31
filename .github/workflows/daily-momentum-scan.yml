@@ -15,6 +15,10 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: momentum-repo-writes
+  cancel-in-progress: false
+
 defaults:
   run:
     working-directory: momentum-trade-desk
@@ -24,6 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -56,25 +62,8 @@ jobs:
       - run: python3 scan_momentum.py
       - run: python3 scan_nifty_conviction.py
 
-      - name: Commit results
-        working-directory: ${{ github.workspace }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add momentum-trade-desk/output/ momentum-trade-desk/data/conviction_results.csv
-          if git diff --staged --quiet; then
-            echo "No changes"
-          else
-            git commit -m "chore: daily scan $(date -u +%Y-%m-%d)"
-            git push
-          fi
-
-      - uses: actions/cache/save@v4
-        with:
-          path: momentum-trade-desk/bhavcopy_data
-          key: bhavcopy-${{ github.run_id }}
-
-      - uses: actions/configure-pages@v5
+      - name: Deploy GitHub Pages
+        uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -82,3 +71,28 @@ jobs:
 
       - id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Commit results
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add momentum-trade-desk/output/ momentum-trade-desk/data/conviction_results.csv
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "chore: daily scan $(date -u +%Y-%m-%d)"
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin main && git push origin main && exit 0
+            echo "Push failed (attempt $attempt), retrying in ${attempt}0s..."
+            sleep $((attempt * 10))
+          done
+          echo "Failed to push after 5 attempts"
+          exit 1
+
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: momentum-trade-desk/bhavcopy_data
+          key: bhavcopy-${{ github.run_id }}
