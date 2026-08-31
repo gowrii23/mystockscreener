@@ -1,5 +1,5 @@
 {
-  "scanDate": "2026-08-28 23:10:16 IST",
+  "scanDate": "2026-08-31 09:46:56 IST",
   "runType": "paper",
   "capital": {
     "total": 1000000,
@@ -10,7 +10,7 @@
   "checks": {
     "regime": {
       "pass": true,
-      "detail": "Trend=NEUTRAL, IV pct=22.4 (need 15-75)"
+      "detail": "Trend=NEUTRAL, IV pct=26.0 (need 15-75)"
     },
     "event": {
       "pass": true,
@@ -51,46 +51,39 @@
     "dailyLossKillPct": 4.0
   },
   "gap": {
-    "prevClose": 24207.75,
-    "todayOpen": 24277.6,
-    "lastClose": 24090.85,
-    "gapPoints": 69.85,
-    "gapPct": 0.29,
-    "absGap": 69.85,
+    "prevClose": 24175.65,
+    "todayOpen": 24117.55,
+    "lastClose": 24050.25,
+    "gapPoints": -58.1,
+    "gapPct": -0.24,
+    "absGap": 58.1,
     "needsReview": false,
     "killZone": false,
     "note": "Uses Nifty daily open vs prior close; replace with GIFT Nifty for true pre-market."
   },
   "regime": {
     "status": "NEUTRAL",
-    "spot": 24090.85,
-    "sma50": 24208.04,
-    "sma200": 24662.01,
-    "distFrom200Pct": -2.32,
+    "spot": 24050.25,
+    "sma50": 24208.94,
+    "sma200": 24648.13,
+    "distFrom200Pct": -2.43,
     "shortVolTrendOk": true,
     "iv": {
-      "current": 11.07,
-      "percentile": 22.4,
+      "current": 11.26,
+      "percentile": 26.0,
       "ok": true,
       "band": "15-75"
     },
     "shortVolOk": true
   },
   "proposal": {
-    "spot": 24090.85,
+    "spot": 24050.25,
     "firstEntryBudget": 75000,
     "maxDeployed": 250000,
     "estimatedMarginPerLot": 85000,
     "suggestedLotsPerLeg": 1,
     "maxLotsFirstEntry": 1,
     "legs": [
-      {
-        "instrument": "NIFTY 23900 PE",
-        "strike": 23900,
-        "type": "PE",
-        "targetPremium": 40,
-        "note": "Verify live premium \u2265 \u20b940 before entry"
-      },
       {
         "instrument": "NIFTY 23850 PE",
         "strike": 23850,
@@ -120,6 +113,20 @@
         "note": "Verify live premium \u2265 \u20b940 before entry"
       },
       {
+        "instrument": "NIFTY 23650 PE",
+        "strike": 23650,
+        "type": "PE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 24250 CE",
+        "strike": 24250,
+        "type": "CE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
         "instrument": "NIFTY 24300 CE",
         "strike": 24300,
         "type": "CE",
@@ -132,17 +139,10 @@
         "type": "CE",
         "targetPremium": 40,
         "note": "Verify live premium \u2265 \u20b940 before entry"
-      },
-      {
-        "instrument": "NIFTY 24400 CE",
-        "strike": 24400,
-        "type": "CE",
-        "targetPremium": 40,
-        "note": "Verify live premium \u2265 \u20b940 before entry"
       }
     ],
     "tailHedge": {
-      "instrument": "NIFTY 23600 PE (buy)",
+      "instrument": "NIFTY 23550 PE (buy)",
       "note": "Far OTM protective put \u2014 insurance, not profit center"
     }
   },
