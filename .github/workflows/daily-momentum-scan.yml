@@ -2,7 +2,7 @@ name: Daily Momentum Scan
 
 on:
   schedule:
-    - cron: "30 13 * * 1-5"  # ~7:00 PM IST after bhavcopy
+    - cron: "30 13 * * 1-5"  # ~7:00 PM IST
   workflow_dispatch:
     inputs:
       backfill_days:
@@ -11,12 +11,12 @@ on:
         default: "0"
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
 concurrency:
-  group: momentum-repo-writes
+  group: momentum-desk-pipeline
   cancel-in-progress: false
 
 defaults:
@@ -26,11 +26,11 @@ defaults:
 jobs:
   scan-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -38,11 +38,15 @@ jobs:
           cache: pip
           cache-dependency-path: momentum-trade-desk/requirements.txt
 
-      - uses: actions/cache@v4
+      - name: Restore caches
+        uses: actions/cache@v4
         with:
-          path: momentum-trade-desk/bhavcopy_data
-          key: bhavcopy-${{ github.run_id }}
-          restore-keys: bhavcopy-
+          path: |
+            momentum-trade-desk/bhavcopy_data
+            momentum-trade-desk/data/runs
+          key: desk-${{ github.run_id }}
+          restore-keys: |
+            desk-
 
       - run: pip install -r requirements.txt
 
@@ -61,10 +65,12 @@ jobs:
           fi
 
       - run: python3 scan_momentum.py
-      - run: python3 scan_nifty_conviction.py
+      - name: Run conviction (EOD)
+        env:
+          RUN_KIND: eod
+        run: python3 scan_nifty_conviction.py
 
-      - name: Deploy GitHub Pages
-        uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -73,36 +79,11 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Commit results
-        working-directory: ${{ github.workspace }}
-        run: |
-          set -e
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Save freshly generated scan outputs
-          rm -rf /tmp/scan-artifacts
-          mkdir -p /tmp/scan-artifacts/output /tmp/scan-artifacts/data
-          cp -r momentum-trade-desk/output/. /tmp/scan-artifacts/output/
-          cp momentum-trade-desk/data/conviction_results.csv /tmp/scan-artifacts/data/
-
-          # Sync to latest remote main, then restore our scan files on top
-          git fetch origin main
-          git checkout main
-          git reset --hard origin/main
-          cp -r /tmp/scan-artifacts/output/. momentum-trade-desk/output/
-          cp /tmp/scan-artifacts/data/conviction_results.csv momentum-trade-desk/data/
-
-          git add momentum-trade-desk/output/ momentum-trade-desk/data/conviction_results.csv
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-            exit 0
-          fi
-          git commit -m "chore: daily scan $(date -u +%Y-%m-%d)"
-          git push origin main
-
-      - uses: actions/cache/save@v4
+      - name: Save caches
         if: always()
+        uses: actions/cache/save@v4
         with:
-          path: momentum-trade-desk/bhavcopy_data
-          key: bhavcopy-${{ github.run_id }}
+          path: |
+            momentum-trade-desk/bhavcopy_data
+            momentum-trade-desk/data/runs
+          key: desk-${{ github.run_id }}

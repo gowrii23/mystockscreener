@@ -18,6 +18,8 @@ from typing import Any
 import pandas as pd
 import yfinance as yf
 
+from strategy.run_store import save_run
+
 BHAVCOPY_DIR = "bhavcopy_data"
 OUTPUT_DIR = "output"
 TOP_N = 25
@@ -343,6 +345,8 @@ def main() -> None:
 
     print(f"[ok] wrote {latest_path}")
     print(f"[ok] wrote {csv_path}")
+    saved = save_run("eod", output)
+    print(f"[ok] saved run snapshot {saved}")
     print(f"Nifty regime: {output['summary']['marketRegime']}")
     print(f"OTM CE signal: {output['summary']['otmCeSignal']}")
     print(f"BUY stocks: {len(buy_stocks)} | WATCH: {len(watch_stocks)}")

@@ -18,6 +18,7 @@ from typing import Any
 
 from strategy.config import OUTPUT_JSON, RESULTS_CSV
 from strategy.conviction import evaluate
+from strategy.run_store import save_run
 
 CSV_HEADER = [
     "run_date",
@@ -91,6 +92,10 @@ def main() -> None:
 
     with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, default=_json_default)
+
+    run_kind = os.environ.get("RUN_KIND", "premarket")
+    saved = save_run(run_kind, output)
+    print(f"[ok] saved run snapshot {saved}")
 
     append_result(
         {

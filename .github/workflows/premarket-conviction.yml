@@ -6,10 +6,12 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
-  group: momentum-repo-writes
+  group: momentum-desk-pipeline
   cancel-in-progress: false
 
 defaults:
@@ -17,13 +19,13 @@ defaults:
     working-directory: momentum-trade-desk
 
 jobs:
-  conviction-check:
+  conviction-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -31,30 +33,32 @@ jobs:
           cache: pip
           cache-dependency-path: momentum-trade-desk/requirements.txt
 
+      - name: Restore run history cache
+        uses: actions/cache@v4
+        with:
+          path: momentum-trade-desk/data/runs
+          key: desk-${{ github.run_id }}
+          restore-keys: desk-
+
       - run: pip install -r requirements.txt
-      - run: python3 scan_nifty_conviction.py
 
-      - name: Commit conviction log
-        working-directory: ${{ github.workspace }}
-        run: |
-          set -e
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Run conviction (pre-market)
+        env:
+          RUN_KIND: premarket
+        run: python3 scan_nifty_conviction.py
 
-          mkdir -p /tmp/scan-artifacts/output /tmp/scan-artifacts/data
-          cp momentum-trade-desk/output/nifty_setup.json /tmp/scan-artifacts/output/
-          cp momentum-trade-desk/data/conviction_results.csv /tmp/scan-artifacts/data/
+      - uses: actions/configure-pages@v5
 
-          git fetch origin main
-          git checkout main
-          git reset --hard origin/main
-          cp /tmp/scan-artifacts/output/nifty_setup.json momentum-trade-desk/output/
-          cp /tmp/scan-artifacts/data/conviction_results.csv momentum-trade-desk/data/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: momentum-trade-desk
 
-          git add momentum-trade-desk/output/nifty_setup.json momentum-trade-desk/data/conviction_results.csv
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-            exit 0
-          fi
-          git commit -m "chore: pre-market conviction $(date -u +%Y-%m-%d)"
-          git push origin main
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Save run history cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: momentum-trade-desk/data/runs
+          key: desk-${{ github.run_id }}
