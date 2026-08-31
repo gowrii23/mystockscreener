@@ -1,0 +1,34 @@
+{
+  "updatedAt": "2026-08-31 17:28:41 IST",
+  "summary": {
+    "totalTrades": 1,
+    "profit": 1,
+    "loss": 0,
+    "neutral": 0,
+    "totalPnl": 5580.0
+  },
+  "pending": [
+    {
+      "predictionDate": "2026-08-31",
+      "validateOn": "2026-09-01",
+      "spot": 24050.25,
+      "legsCount": 8
+    }
+  ],
+  "trades": [
+    {
+      "prediction_date": "2026-08-28",
+      "validate_date": "2026-08-31",
+      "signal": "QUALIFIED_SETUP",
+      "entry_spot": "24117.55",
+      "exit_close": "24080.4",
+      "day_low": "23993.6",
+      "day_high": "24128.7",
+      "premium_collected": "30000",
+      "pnl_inr": "5580.0",
+      "outcome": "PROFIT",
+      "legs_count": "8",
+      "notes": "pred_spot=24175.65; method=theta_decay_all_otm; all_otm_close=True"
+    }
+  ]
+}

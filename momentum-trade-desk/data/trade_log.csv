@@ -1,0 +1,2 @@
+prediction_date,validate_date,signal,entry_spot,exit_close,day_low,day_high,premium_collected,pnl_inr,outcome,legs_count,notes
+2026-08-28,2026-08-31,QUALIFIED_SETUP,24117.55,24080.4,23993.6,24128.7,30000,5580.0,PROFIT,8,pred_spot=24175.65; method=theta_decay_all_otm; all_otm_close=True

@@ -1,0 +1,82 @@
+{
+  "predictionDate": "2026-08-31",
+  "savedAt": "2026-08-31 17:27:44 IST",
+  "validated": false,
+  "action": "QUALIFIED_SETUP",
+  "spot": 24050.25,
+  "premiumPerLeg": 50,
+  "lotSize": 75,
+  "hedgePremium": 8,
+  "proposal": {
+    "spot": 24050.25,
+    "firstEntryBudget": 75000,
+    "maxDeployed": 250000,
+    "estimatedMarginPerLot": 85000,
+    "suggestedLotsPerLeg": 1,
+    "maxLotsFirstEntry": 1,
+    "legs": [
+      {
+        "instrument": "NIFTY 23850 PE",
+        "strike": 23850,
+        "type": "PE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 23800 PE",
+        "strike": 23800,
+        "type": "PE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 23750 PE",
+        "strike": 23750,
+        "type": "PE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 23700 PE",
+        "strike": 23700,
+        "type": "PE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 23650 PE",
+        "strike": 23650,
+        "type": "PE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 24250 CE",
+        "strike": 24250,
+        "type": "CE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 24300 CE",
+        "strike": 24300,
+        "type": "CE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      },
+      {
+        "instrument": "NIFTY 24350 CE",
+        "strike": 24350,
+        "type": "CE",
+        "targetPremium": 40,
+        "note": "Verify live premium \u2265 \u20b940 before entry"
+      }
+    ],
+    "tailHedge": {
+      "instrument": "NIFTY 23550 PE (buy)",
+      "note": "Far OTM protective put \u2014 insurance, not profit center"
+    }
+  },
+  "regime": "NEUTRAL",
+  "gapPoints": -58.1
+}

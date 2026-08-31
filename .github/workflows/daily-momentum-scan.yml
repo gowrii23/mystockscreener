@@ -44,11 +44,16 @@ jobs:
           path: |
             momentum-trade-desk/bhavcopy_data
             momentum-trade-desk/data/runs
+            momentum-trade-desk/data/predictions
+            momentum-trade-desk/data/trade_log.csv
           key: desk-${{ github.run_id }}
           restore-keys: |
             desk-
 
       - run: pip install -r requirements.txt
+
+      - name: Validate prior-day predictions (next-day P&L)
+        run: python3 validate_trade.py
 
       - name: Fetch bhavcopy
         run: |
@@ -86,4 +91,6 @@ jobs:
           path: |
             momentum-trade-desk/bhavcopy_data
             momentum-trade-desk/data/runs
+            momentum-trade-desk/data/predictions
+            momentum-trade-desk/data/trade_log.csv
           key: desk-${{ github.run_id }}
