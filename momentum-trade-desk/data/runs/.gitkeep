@@ -1,0 +1,2 @@
+# Run snapshots are written by CI and cached between deploys.
+# Do not gitignore this folder — manifest.json is the seed.

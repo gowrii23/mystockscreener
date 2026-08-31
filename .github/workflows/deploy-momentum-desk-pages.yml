@@ -8,7 +8,7 @@ on:
       - '.github/workflows/deploy-momentum-desk-pages.yml'
   workflow_dispatch:
 
-# Pages: https://gowrii23.github.io/mystockscreener/
+# Deploy-only: scan results go to GitHub Pages via artifact — no git push (avoids race conditions).
 
 permissions:
   contents: read
