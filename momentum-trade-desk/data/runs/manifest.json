@@ -1,1 +1,16 @@
-{"runs":[]}
+{
+  "runs": [
+    {
+      "timestamp": "2026-09-01T171213",
+      "kind": "eod",
+      "file": "data/runs/2026-09-01T171213_eod.json",
+      "action": "SKIP"
+    },
+    {
+      "timestamp": "2026-09-01T171215",
+      "kind": "eod",
+      "file": "data/runs/2026-09-01T171215_eod.json",
+      "action": "QUALIFIED_SETUP"
+    }
+  ]
+}

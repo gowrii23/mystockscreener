@@ -1,14 +1,14 @@
 {
-  "predictionDate": "2026-08-31",
-  "savedAt": "2026-08-31 17:27:44 IST",
-  "validated": true,
+  "predictionDate": "2026-09-01",
+  "savedAt": "2026-09-01 17:12:15 IST",
+  "validated": false,
   "action": "QUALIFIED_SETUP",
-  "spot": 24050.25,
+  "spot": 24055.8,
   "premiumPerLeg": 50,
   "lotSize": 75,
   "hedgePremium": 8,
   "proposal": {
-    "spot": 24050.25,
+    "spot": 24055.8,
     "firstEntryBudget": 75000,
     "maxDeployed": 250000,
     "estimatedMarginPerLot": 85000,
@@ -78,25 +78,5 @@
     }
   },
   "regime": "NEUTRAL",
-  "gapPoints": -58.1,
-  "validation": {
-    "prediction_date": "2026-08-31",
-    "validate_date": "2026-09-01",
-    "signal": "QUALIFIED_SETUP",
-    "entry_spot": 24077.55,
-    "exit_close": 24055.8,
-    "day_low": 23952.55,
-    "day_high": 24143.15,
-    "premium_collected": 30000,
-    "pnl_inr": 5580.0,
-    "outcome": "PROFIT",
-    "legs_count": 8,
-    "notes": "pred_spot=24050.25; method=theta_decay_all_otm; all_otm_close=True",
-    "premiumCollected": 30000,
-    "pnlInr": 5580.0,
-    "method": "theta_decay_all_otm",
-    "allOtmAtClose": true,
-    "peIntrinsicClose": 0.0,
-    "ceIntrinsicClose": 0.0
-  }
+  "gapPoints": -2.85
 }
