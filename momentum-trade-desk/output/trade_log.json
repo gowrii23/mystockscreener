@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-01 17:11:59 IST",
+  "updatedAt": "2026-09-01 17:14:05 IST",
   "summary": {
     "totalTrades": 2,
     "profit": 2,
@@ -7,7 +7,14 @@
     "neutral": 0,
     "totalPnl": 11160.0
   },
-  "pending": [],
+  "pending": [
+    {
+      "predictionDate": "2026-09-01",
+      "validateOn": "2026-09-02",
+      "spot": 24055.8,
+      "legsCount": 8
+    }
+  ],
   "trades": [
     {
       "prediction_date": "2026-08-28",
