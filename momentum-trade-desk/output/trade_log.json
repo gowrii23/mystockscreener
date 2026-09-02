@@ -1,13 +1,23 @@
 {
-  "updatedAt": "2026-09-02 18:57:20 IST",
+  "updatedAt": "2026-09-02 19:02:53 IST",
   "summary": {
-    "totalTrades": 3,
+    "totalTrades": 2,
     "profit": 2,
-    "loss": 1,
+    "loss": 0,
     "neutral": 0,
-    "totalPnl": 5115.0
+    "totalPnl": 8513.0
   },
   "pending": [],
+  "cancelled": [
+    {
+      "id": "2026-09-01_eod",
+      "predictionDate": "2026-09-01",
+      "runKind": "eod",
+      "wouldValidateOn": "2026-09-02",
+      "reason": "eod_no_trade_superseded",
+      "cancelledAt": "2026-09-02 18:57:00 IST"
+    }
+  ],
   "trades": [
     {
       "prediction_date": "2026-08-28",
@@ -42,23 +52,6 @@
       "legs_count": "8",
       "intraday_breach": "False",
       "notes": "method=theta_decay_otm; pred_spot=24050.25; all_otm_close=True; theta_mult=0.188"
-    },
-    {
-      "prediction_date": "2026-09-01",
-      "run_kind": "eod",
-      "validate_date": "2026-09-02",
-      "signal": "QUALIFIED_SETUP",
-      "entry_spot": "24055.8",
-      "session_open": "23858.0",
-      "exit_close": "23914.45",
-      "day_low": "23786.8",
-      "day_high": "23914.45",
-      "premium_collected": "24000",
-      "pnl_inr": "-3398.0",
-      "outcome": "LOSS",
-      "legs_count": "8",
-      "intraday_breach": "True",
-      "notes": "method=intraday_breach_recovered; pred_spot=24055.8; all_otm_close=True; theta_mult=None"
     }
   ]
 }

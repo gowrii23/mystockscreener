@@ -781,6 +781,7 @@ async function loadTradeLog(){
     const data = await res.json();
     const s = data.summary || {};
     const pending = data.pending || [];
+    const cancelled = data.cancelled || [];
     const trades = data.trades || [];
 
     const pendingHtml = pending.length ? `
@@ -800,6 +801,23 @@ async function loadTradeLog(){
         </table>
       </div>` : '';
 
+    const cancelledHtml = cancelled.length ? `
+      <div class="scan-card" style="margin-bottom:14px">
+        <h3>Auto-closed (NO_TRADE)</h3>
+        <table>
+          <thead><tr><th>Predicted</th><th>Kind</th><th>Would validate</th><th>Reason</th><th>Closed at</th></tr></thead>
+          <tbody>${cancelled.map(c => `
+            <tr>
+              <td>${c.predictionDate}</td>
+              <td>${c.runKind ?? 'eod'}</td>
+              <td>${c.wouldValidateOn}</td>
+              <td>${c.reason ?? '—'}</td>
+              <td>${c.cancelledAt ?? '—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>` : '';
+
     el.innerHTML = `
       <div class="summary-row">
         <div class="summary-chip"><div class="label">Trades</div><div class="value">${s.totalTrades ?? 0}</div></div>
@@ -809,6 +827,7 @@ async function loadTradeLog(){
         <div class="summary-chip"><div class="label">Total P&L</div><div class="value">${formatInr(s.totalPnl)}</div></div>
       </div>
       ${pendingHtml}
+      ${cancelledHtml}
       <table>
         <thead><tr>
           <th>Predicted</th><th>Kind</th><th>Validated</th><th>Entry</th><th>Close</th><th>Range</th><th>Premium</th><th>P&L</th><th>Breach</th><th>Outcome</th>

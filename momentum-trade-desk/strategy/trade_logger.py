@@ -231,6 +231,86 @@ def save_prediction(setup: dict[str, Any], run_kind: str | None = None) -> Path 
     return path
 
 
+def cancel_open_predictions(reason: str, as_of: date | None = None) -> list[str]:
+    """
+    Auto-close all pending predictions at EOD/pre-market when conviction is NO_TRADE.
+    Cancelled predictions are never validated and any matching trade-log rows are removed.
+    """
+    as_of = as_of or date.today()
+    prune_legacy_predictions()
+    cancelled_ids: list[str] = []
+
+    for path in _canonical_prediction_paths():
+        with path.open(encoding="utf-8") as f:
+            pred = json.load(f)
+
+        if pred.get("validated") or pred.get("cancelled"):
+            continue
+
+        pred["cancelled"] = True
+        pred["cancelReason"] = reason
+        pred["cancelledAt"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S IST")
+        pred["cancelledOn"] = as_of.isoformat()
+        with path.open("w", encoding="utf-8") as f:
+            json.dump(pred, f, indent=2)
+        cancelled_ids.append(_prediction_id(pred))
+
+    if cancelled_ids:
+        _purge_trade_log_for_cancelled()
+        _export_trade_log_json()
+
+    return cancelled_ids
+
+
+def _cancelled_prediction_keys() -> set[tuple[str, str, str]]:
+    keys: set[tuple[str, str, str]] = set()
+    for path in _canonical_prediction_paths():
+        with path.open(encoding="utf-8") as f:
+            pred = json.load(f)
+        if not pred.get("cancelled"):
+            continue
+        pred_date = date.fromisoformat(pred["predictionDate"])
+        run_kind = pred.get("runKind", "eod")
+        keys.add(
+            (
+                pred_date.isoformat(),
+                run_kind,
+                _validate_date(pred_date, run_kind).isoformat(),
+            )
+        )
+    return keys
+
+
+def _purge_trade_log_for_cancelled() -> None:
+    cancelled = _cancelled_prediction_keys()
+    if not cancelled:
+        return
+    rows = [r for r in _load_trade_log_rows() if _trade_log_key(r) not in cancelled]
+    _write_trade_log_rows(rows)
+
+
+def _cancelled_predictions() -> list[dict[str, Any]]:
+    cancelled: list[dict[str, Any]] = []
+    for path in _canonical_prediction_paths():
+        with path.open(encoding="utf-8") as f:
+            pred = json.load(f)
+        if not pred.get("cancelled"):
+            continue
+        pred_date = date.fromisoformat(pred["predictionDate"])
+        run_kind = pred.get("runKind", "eod")
+        cancelled.append(
+            {
+                "id": _prediction_id(pred),
+                "predictionDate": pred_date.isoformat(),
+                "runKind": run_kind,
+                "wouldValidateOn": _validate_date(pred_date, run_kind).isoformat(),
+                "reason": pred.get("cancelReason"),
+                "cancelledAt": pred.get("cancelledAt"),
+            }
+        )
+    return sorted(cancelled, key=lambda x: x["cancelledAt"] or "", reverse=True)
+
+
 def _intrinsic_pe(strike: float, spot: float) -> float:
     return max(0.0, strike - spot)
 
@@ -371,6 +451,9 @@ def validate_pending(as_of: date | None = None) -> list[dict[str, Any]]:
         if as_of < validate_date:
             continue
 
+        if pred.get("cancelled"):
+            continue
+
         if pred.get("validated") or _is_already_logged(
             pred_date.isoformat(), run_kind, validate_date.isoformat()
         ):
@@ -449,7 +532,7 @@ def _pending_predictions() -> list[dict[str, Any]]:
     for path in _canonical_prediction_paths():
         with path.open(encoding="utf-8") as f:
             pred = json.load(f)
-        if pred.get("validated"):
+        if pred.get("validated") or pred.get("cancelled"):
             continue
         pred_date = date.fromisoformat(pred["predictionDate"])
         run_kind = pred.get("runKind", "eod")
@@ -467,6 +550,7 @@ def _pending_predictions() -> list[dict[str, Any]]:
 
 
 def _export_trade_log_json() -> None:
+    _purge_trade_log_for_cancelled()
     rows = _dedupe_trade_rows(_load_trade_log_rows())
 
     summary = {
@@ -484,6 +568,7 @@ def _export_trade_log_json() -> None:
                 "updatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S IST"),
                 "summary": summary,
                 "pending": _pending_predictions(),
+                "cancelled": _cancelled_predictions(),
                 "trades": rows,
             },
             f,

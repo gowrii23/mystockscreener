@@ -19,7 +19,7 @@ from typing import Any
 from strategy.config import OUTPUT_JSON, RESULTS_CSV
 from strategy.conviction import evaluate
 from strategy.run_store import save_run
-from strategy.trade_logger import save_prediction
+from strategy.trade_logger import cancel_open_predictions, save_prediction
 
 CSV_HEADER = [
     "run_date",
@@ -98,11 +98,16 @@ def main() -> None:
     saved = save_run(run_kind, output)
     print(f"[ok] saved run snapshot {saved}")
 
-    pred_path = save_prediction(output, run_kind=run_kind)
-    if pred_path:
-        print(f"[ok] saved pending prediction for validation → {pred_path}")
-    elif output.get("action") == "QUALIFIED_SETUP" and not output.get("tradeLogEligible"):
-        print("[skip] QUALIFIED_SETUP not logged — momentum conflict or ineligible")
+    if result["action"] == "QUALIFIED_SETUP" and result.get("tradeLogEligible"):
+        pred_path = save_prediction(output, run_kind=run_kind)
+        if pred_path:
+            print(f"[ok] saved pending prediction for validation → {pred_path}")
+    else:
+        closed = cancel_open_predictions(reason=f"{run_kind}_no_trade")
+        if closed:
+            print(f"[ok] auto-closed {len(closed)} pending prediction(s) at {run_kind}: {', '.join(closed)}")
+        elif output.get("action") == "QUALIFIED_SETUP" and not output.get("tradeLogEligible"):
+            print("[skip] QUALIFIED_SETUP not logged — momentum conflict; pending predictions closed")
 
     append_result(
         {

@@ -16,13 +16,14 @@ Automatically fetches NSE bhavcopy data via GitHub Actions, ranks momentum stock
 
 | Step | When | What happens |
 |------|------|--------------|
-| **Predict** | Pre-market or EOD when `QUALIFIED_SETUP` | Ladder saved to `data/predictions/YYYY-MM-DD.json` |
-| **Validate** | Next trading day EOD (before new scans) | `validate_trade.py` fetches Nifty O/H/L/C, estimates P&L, writes outcome |
+| **Predict** | Pre-market or EOD when `QUALIFIED_SETUP` + momentum aligned | Ladder saved to `data/predictions/YYYY-MM-DD_{premarket|eod}.json` |
+| **Auto-close** | EOD or pre-market when `NO_TRADE` / ineligible | All pending predictions cancelled — never validated |
+| **Validate** | Next trading day EOD (before new scans) | `validate_trade.py` scores only active (non-cancelled) predictions |
 | **Log** | After validation | Row appended to `data/trade_log.csv` + `output/trade_log.json` |
 
-Outcomes use a ±₹1,500 neutral band. P&L uses per-leg target premiums (₹40/leg), intraday breach detection (ITM at day low/high), and range-adjusted theta when all legs stay OTM at close.
+Outcomes use a ±₹1,500 neutral band. P&L uses per-leg target premiums (₹40/leg), intraday breach detection (ITM at day low/high), and range-adjusted theta when all legs stay OTM at close. Intraday breach cannot log PROFIT.
 
-Predictions are saved per run kind (`YYYY-MM-DD_premarket.json` / `YYYY-MM-DD_eod.json`). EOD signals validate the next trading day; pre-market signals validate the same day at EOD. Trade logger is blocked when momentum regime is BEARISH (conflicts with short CE wing).
+Predictions are saved per run kind (`YYYY-MM-DD_premarket.json` / `YYYY-MM-DD_eod.json`). EOD signals validate the next trading day; pre-market signals validate the same day at EOD. Trade logger is blocked when momentum regime is BEARISH. **If conviction flips to NO_TRADE, pending legs are auto-closed at EOD** (and pre-market) so stale signals are not scored later.
 
 ## Scheduled jobs (GitHub Actions — free on public repos)
 
