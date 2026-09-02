@@ -20,7 +20,9 @@ Automatically fetches NSE bhavcopy data via GitHub Actions, ranks momentum stock
 | **Validate** | Next trading day EOD (before new scans) | `validate_trade.py` fetches Nifty O/H/L/C, estimates P&L, writes outcome |
 | **Log** | After validation | Row appended to `data/trade_log.csv` + `output/trade_log.json` |
 
-Outcomes use a ±₹1,500 neutral band: above = **PROFIT**, below = **LOSS**, within = **NEUTRAL**. P&L assumes ~20% same-day theta when all short legs stay OTM at close; otherwise intrinsic at close minus hedge cost.
+Outcomes use a ±₹1,500 neutral band. P&L uses per-leg target premiums (₹40/leg), intraday breach detection (ITM at day low/high), and range-adjusted theta when all legs stay OTM at close.
+
+Predictions are saved per run kind (`YYYY-MM-DD_premarket.json` / `YYYY-MM-DD_eod.json`). EOD signals validate the next trading day; pre-market signals validate the same day at EOD. Trade logger is blocked when momentum regime is BEARISH (conflicts with short CE wing).
 
 ## Scheduled jobs (GitHub Actions — free on public repos)
 

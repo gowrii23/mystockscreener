@@ -7,3 +7,5 @@ run_date,run_type,setup_qualified,conviction_score,regime_status,gap_points,blac
 2026-08-28,paper,True,4/4,NEUTRAL,69.85,False,False,QUALIFIED_SETUP,QUALIFIED,Paper mode only — no broker orders placed; Confirm manual gut check before any live entry; Zero trades per week is a valid outcome
 2026-08-31,paper,True,4/4,NEUTRAL,-58.1,False,False,QUALIFIED_SETUP,QUALIFIED,Paper mode only — no broker orders placed; Confirm manual gut check before any live entry; Zero trades per week is a valid outcome
 2026-09-01,paper,True,4/4,NEUTRAL,-2.85,False,False,QUALIFIED_SETUP,QUALIFIED,Paper mode only — no broker orders placed; Confirm manual gut check before any live entry; Zero trades per week is a valid outcome
+2026-09-02,paper,False,3/5,NEUTRAL,-2.85,True,True,NO_TRADE,WAITING_FOR_SETUP,Paper mode only — no broker orders placed; Confirm manual gut check before any live entry; Zero trades per week is a valid outcome
+2026-09-02,paper,False,3/5,NEUTRAL,-2.85,True,True,NO_TRADE,WAITING_FOR_SETUP,Paper mode only — no broker orders placed; Confirm manual gut check before any live entry; Zero trades per week is a valid outcome

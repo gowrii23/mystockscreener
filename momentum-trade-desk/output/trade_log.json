@@ -1,15 +1,17 @@
 {
-  "updatedAt": "2026-09-01 17:14:05 IST",
+  "updatedAt": "2026-09-02 03:08:16 IST",
   "summary": {
     "totalTrades": 2,
     "profit": 2,
     "loss": 0,
     "neutral": 0,
-    "totalPnl": 11160.0
+    "totalPnl": 8513.0
   },
   "pending": [
     {
+      "id": "2026-09-01_eod",
       "predictionDate": "2026-09-01",
+      "runKind": "eod",
       "validateOn": "2026-09-02",
       "spot": 24055.8,
       "legsCount": 8
@@ -18,31 +20,37 @@
   "trades": [
     {
       "prediction_date": "2026-08-28",
+      "run_kind": "eod",
       "validate_date": "2026-08-31",
       "signal": "QUALIFIED_SETUP",
-      "entry_spot": "24117.55",
+      "entry_spot": "24175.65",
+      "session_open": "24117.55",
       "exit_close": "24080.4",
       "day_low": "23993.6",
       "day_high": "24128.7",
-      "premium_collected": "30000",
-      "pnl_inr": "5580.0",
+      "premium_collected": "24000",
+      "pnl_inr": "4298.0",
       "outcome": "PROFIT",
       "legs_count": "8",
-      "notes": "pred_spot=24175.65; method=theta_decay_all_otm; all_otm_close=True"
+      "intraday_breach": "False",
+      "notes": "method=theta_decay_otm; pred_spot=24175.65; all_otm_close=True; theta_mult=0.192"
     },
     {
       "prediction_date": "2026-08-31",
+      "run_kind": "eod",
       "validate_date": "2026-09-01",
       "signal": "QUALIFIED_SETUP",
-      "entry_spot": "24077.55",
+      "entry_spot": "24050.25",
+      "session_open": "24077.55",
       "exit_close": "24055.8",
       "day_low": "23952.55",
       "day_high": "24143.15",
-      "premium_collected": "30000",
-      "pnl_inr": "5580.0",
+      "premium_collected": "24000",
+      "pnl_inr": "4215.0",
       "outcome": "PROFIT",
       "legs_count": "8",
-      "notes": "pred_spot=24050.25; method=theta_decay_all_otm; all_otm_close=True"
+      "intraday_breach": "False",
+      "notes": "method=theta_decay_otm; pred_spot=24050.25; all_otm_close=True; theta_mult=0.188"
     }
   ]
 }

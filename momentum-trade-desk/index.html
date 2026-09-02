@@ -740,7 +740,8 @@ async function loadConvictionScan(){
           <div class="scan-meta">
             <div>As of: <strong>${data.scanDate || '—'}</strong></div>
             <div>State: <strong>${data.state || '—'}</strong></div>
-            <div>Auto score: <strong>${data.autoScore ?? '—'}/${data.autoTotal ?? 4}</strong> (manual gut check required for 5/5)</div>
+            <div>Auto score: <strong>${data.autoScore ?? '—'}/${data.autoTotal ?? 5}</strong> (manual gut check = 6th point)</div>
+            <div>Trade logger: <strong>${data.tradeLogEligible ? 'ELIGIBLE' : 'BLOCKED'}</strong></div>
             <div class="strike">${action}</div>
             <span class="verdict ${action === 'QUALIFIED_SETUP' ? 'BUY' : action === 'WATCH' ? 'WATCH' : 'SKIP'}">${action}</span>
             <p style="margin-top:10px">Kill switches: ${kills}</p>
@@ -786,10 +787,11 @@ async function loadTradeLog(){
       <div class="scan-card" style="margin-bottom:14px">
         <h3>Pending validation</h3>
         <table>
-          <thead><tr><th>Predicted</th><th>Validates on</th><th>Spot</th><th>Legs</th></tr></thead>
+          <thead><tr><th>Predicted</th><th>Kind</th><th>Validates</th><th>Spot</th><th>Legs</th></tr></thead>
           <tbody>${pending.map(p => `
             <tr>
               <td>${p.predictionDate}</td>
+              <td>${p.runKind ?? 'eod'}</td>
               <td>${p.validateOn}</td>
               <td>${p.spot ?? '—'}</td>
               <td>${p.legsCount ?? '—'}</td>
@@ -809,19 +811,21 @@ async function loadTradeLog(){
       ${pendingHtml}
       <table>
         <thead><tr>
-          <th>Predicted</th><th>Validated</th><th>Entry</th><th>Close</th><th>Range</th><th>Premium</th><th>P&L</th><th>Outcome</th>
+          <th>Predicted</th><th>Kind</th><th>Validated</th><th>Entry</th><th>Close</th><th>Range</th><th>Premium</th><th>P&L</th><th>Breach</th><th>Outcome</th>
         </tr></thead>
         <tbody>${trades.length ? trades.map(t => `
           <tr>
             <td>${t.prediction_date}</td>
+            <td>${t.run_kind || 'eod'}</td>
             <td>${t.validate_date}</td>
             <td>${t.entry_spot}</td>
             <td>${t.exit_close}</td>
             <td>${t.day_low} – ${t.day_high}</td>
             <td>${formatInr(t.premium_collected)}</td>
             <td>${formatInr(t.pnl_inr)}</td>
+            <td>${t.intraday_breach === 'True' || t.intraday_breach === true ? '⚠' : '—'}</td>
             <td><span class="outcome ${t.outcome}">${t.outcome}</span></td>
-          </tr>`).join('') : '<tr><td colspan="8" class="empty">No validated trades yet.</td></tr>'}
+          </tr>`).join('') : '<tr><td colspan="10" class="empty">No validated trades yet.</td></tr>'}
         </tbody>
       </table>
       <p class="badge" style="margin-top:10px">Updated: ${data.updatedAt || '—'}</p>`;

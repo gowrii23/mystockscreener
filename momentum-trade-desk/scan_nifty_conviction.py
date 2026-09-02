@@ -98,9 +98,11 @@ def main() -> None:
     saved = save_run(run_kind, output)
     print(f"[ok] saved run snapshot {saved}")
 
-    pred_path = save_prediction(output)
+    pred_path = save_prediction(output, run_kind=run_kind)
     if pred_path:
-        print(f"[ok] saved pending prediction for next-day validation → {pred_path}")
+        print(f"[ok] saved pending prediction for validation → {pred_path}")
+    elif output.get("action") == "QUALIFIED_SETUP" and not output.get("tradeLogEligible"):
+        print("[skip] QUALIFIED_SETUP not logged — momentum conflict or ineligible")
 
     append_result(
         {

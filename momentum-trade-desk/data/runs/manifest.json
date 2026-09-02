@@ -11,6 +11,24 @@
       "kind": "eod",
       "file": "data/runs/2026-09-01T171215_eod.json",
       "action": "QUALIFIED_SETUP"
+    },
+    {
+      "timestamp": "2026-09-02T030815",
+      "kind": "eod",
+      "file": "data/runs/2026-09-02T030815_eod.json",
+      "action": "SKIP"
+    },
+    {
+      "timestamp": "2026-09-02T030817",
+      "kind": "eod",
+      "file": "data/runs/2026-09-02T030817_eod.json",
+      "action": "NO_TRADE"
+    },
+    {
+      "timestamp": "2026-09-02T030818",
+      "kind": "premarket",
+      "file": "data/runs/2026-09-02T030818_premarket.json",
+      "action": "NO_TRADE"
     }
   ]
 }
