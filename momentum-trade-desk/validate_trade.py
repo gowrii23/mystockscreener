@@ -13,7 +13,7 @@ from __future__ import annotations
 import argparse
 from datetime import date
 
-from strategy.trade_logger import rebuild_trade_log_from_predictions, validate_pending
+from strategy.trade_logger import prune_legacy_predictions, rebuild_trade_log_from_predictions, validate_pending
 
 
 def main() -> None:
@@ -24,6 +24,10 @@ def main() -> None:
         help="Clear trade log and re-validate all prediction files",
     )
     args = parser.parse_args()
+
+    removed = prune_legacy_predictions()
+    if removed:
+        print(f"[ok] pruned legacy prediction files: {', '.join(removed)}")
 
     if args.rebuild:
         rebuild_trade_log_from_predictions(date.today())

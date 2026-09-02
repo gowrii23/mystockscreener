@@ -40,6 +40,7 @@ jobs:
             momentum-trade-desk/data/runs
             momentum-trade-desk/data/predictions
             momentum-trade-desk/data/trade_log.csv
+            momentum-trade-desk/data/trade_log.seed.csv
           key: desk-${{ github.run_id }}
           restore-keys: desk-
 
@@ -67,4 +68,5 @@ jobs:
             momentum-trade-desk/data/runs
             momentum-trade-desk/data/predictions
             momentum-trade-desk/data/trade_log.csv
+            momentum-trade-desk/data/trade_log.seed.csv
           key: desk-${{ github.run_id }}

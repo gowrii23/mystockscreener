@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import re
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -16,11 +17,17 @@ from strategy.config import MIN_PREMIUM_PER_LEG
 PREDICTIONS_DIR = Path("data/predictions")
 TRADE_LOG_CSV = Path("data/trade_log.csv")
 TRADE_LOG_JSON = Path("output/trade_log.json")
+SEED_TRADE_LOG_CSV = Path("data/trade_log.seed.csv")
 
 LOT_SIZE = 75
 HEDGE_PREMIUM = 8
 BASE_THETA_CAPTURE = 0.20
+BREACH_THETA_CAPTURE = 0.05
+BREACH_STRESS_FACTOR = 0.75
 NEUTRAL_BAND = 1500
+
+LEGACY_PRED_RE = re.compile(r"^\d{4}-\d{2}-\d{2}\.json$")
+CANONICAL_PRED_RE = re.compile(r"^\d{4}-\d{2}-\d{2}_(premarket|eod)\.json$")
 
 LOG_HEADER = [
     "prediction_date",
@@ -44,8 +51,11 @@ LOG_HEADER = [
 def _ensure_trade_log() -> None:
     TRADE_LOG_CSV.parent.mkdir(parents=True, exist_ok=True)
     if not TRADE_LOG_CSV.exists():
-        with TRADE_LOG_CSV.open("w", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow(LOG_HEADER)
+        if SEED_TRADE_LOG_CSV.exists():
+            TRADE_LOG_CSV.write_text(SEED_TRADE_LOG_CSV.read_text(encoding="utf-8"), encoding="utf-8")
+        else:
+            with TRADE_LOG_CSV.open("w", newline="", encoding="utf-8") as f:
+                csv.writer(f).writerow(LOG_HEADER)
         return
 
     with TRADE_LOG_CSV.open(encoding="utf-8") as f:
@@ -53,8 +63,11 @@ def _ensure_trade_log() -> None:
     if header != LOG_HEADER:
         backup = TRADE_LOG_CSV.with_suffix(".csv.bak")
         TRADE_LOG_CSV.rename(backup)
-        with TRADE_LOG_CSV.open("w", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow(LOG_HEADER)
+        if SEED_TRADE_LOG_CSV.exists():
+            TRADE_LOG_CSV.write_text(SEED_TRADE_LOG_CSV.read_text(encoding="utf-8"), encoding="utf-8")
+        else:
+            with TRADE_LOG_CSV.open("w", newline="", encoding="utf-8") as f:
+                csv.writer(f).writerow(LOG_HEADER)
 
 
 def _next_trading_day(d: date) -> date:
@@ -66,29 +79,109 @@ def _next_trading_day(d: date) -> date:
 
 
 def _validate_date(pred_date: date, run_kind: str) -> date:
-    """Premarket: validate same session at EOD. EOD: validate next trading day."""
     if run_kind == "premarket":
         return pred_date
     return _next_trading_day(pred_date)
 
 
-def _prediction_paths() -> list[Path]:
+def _prediction_key_from_path(path: Path) -> tuple[str, str] | None:
+    if CANONICAL_PRED_RE.match(path.name):
+        pred_date, run_kind = path.stem.rsplit("_", 1)
+        return pred_date, run_kind
+    if LEGACY_PRED_RE.match(path.name):
+        return path.stem, "eod"
+    return None
+
+
+def prune_legacy_predictions() -> list[str]:
+    """Remove legacy YYYY-MM-DD.json when canonical run_kind file exists."""
+    removed: list[str] = []
+    if not PREDICTIONS_DIR.exists():
+        return removed
+
+    canonical_dates = {
+        p.stem.rsplit("_", 1)[0]
+        for p in PREDICTIONS_DIR.glob("*.json")
+        if CANONICAL_PRED_RE.match(p.name)
+    }
+    for path in list(PREDICTIONS_DIR.glob("*.json")):
+        if LEGACY_PRED_RE.match(path.name) and path.stem in canonical_dates:
+            path.unlink()
+            removed.append(path.name)
+    return removed
+
+
+def _canonical_prediction_paths() -> list[Path]:
     if not PREDICTIONS_DIR.exists():
         return []
-    return sorted(
-        p
-        for p in PREDICTIONS_DIR.glob("*.json")
-        if p.name != ".gitkeep" and not p.name.endswith(".bak")
-    )
+
+    chosen: dict[tuple[str, str], Path] = {}
+    for path in sorted(PREDICTIONS_DIR.glob("*.json")):
+        if path.name in {".gitkeep"} or path.name.endswith(".bak"):
+            continue
+        key = _prediction_key_from_path(path)
+        if not key:
+            continue
+        existing = chosen.get(key)
+        if existing is None:
+            chosen[key] = path
+            continue
+        # Prefer canonical *_eod.json over legacy flat file.
+        if CANONICAL_PRED_RE.match(path.name) and LEGACY_PRED_RE.match(existing.name):
+            chosen[key] = path
+
+    return sorted(chosen.values())
 
 
-def _prediction_id(pred: dict[str, Any], path: Path) -> str:
+def _prediction_id(pred: dict[str, Any]) -> str:
     run_kind = pred.get("runKind", "eod")
     return f"{pred['predictionDate']}_{run_kind}"
 
 
+def _trade_log_key(row: dict[str, Any]) -> tuple[str, str, str]:
+    return (
+        row["prediction_date"],
+        row.get("run_kind", "eod"),
+        row["validate_date"],
+    )
+
+
+def _load_trade_log_rows() -> list[dict[str, str]]:
+    if not TRADE_LOG_CSV.exists():
+        return []
+    with TRADE_LOG_CSV.open(encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    return _dedupe_trade_rows(rows)
+
+
+def _dedupe_trade_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    seen: set[tuple[str, str, str]] = set()
+    unique: list[dict[str, str]] = []
+    for row in rows:
+        key = _trade_log_key(row)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(row)
+    return unique
+
+
+def _is_already_logged(pred_date: str, run_kind: str, validate_date: str) -> bool:
+    key = (pred_date, run_kind, validate_date)
+    return key in {_trade_log_key(r) for r in _load_trade_log_rows()}
+
+
+def _write_trade_log_rows(rows: list[dict[str, str]]) -> None:
+    rows = _dedupe_trade_rows(rows)
+    with TRADE_LOG_CSV.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=LOG_HEADER)
+        writer.writeheader()
+        writer.writerows(rows)
+    SEED_TRADE_LOG_CSV.parent.mkdir(parents=True, exist_ok=True)
+    SEED_TRADE_LOG_CSV.write_text(TRADE_LOG_CSV.read_text(encoding="utf-8"), encoding="utf-8")
+
+
 def save_prediction(setup: dict[str, Any], run_kind: str | None = None) -> Path | None:
-    """Save QUALIFIED_SETUP when trade-log eligible (no momentum conflict)."""
     if setup.get("action") != "QUALIFIED_SETUP":
         return None
     if not setup.get("tradeLogEligible", True):
@@ -102,6 +195,10 @@ def save_prediction(setup: dict[str, Any], run_kind: str | None = None) -> Path 
     PREDICTIONS_DIR.mkdir(parents=True, exist_ok=True)
     pred_date = date.today().isoformat()
     path = PREDICTIONS_DIR / f"{pred_date}_{run_kind}.json"
+
+    legacy = PREDICTIONS_DIR / f"{pred_date}.json"
+    if legacy.exists():
+        legacy.unlink()
 
     legs = proposal["legs"]
     short_legs = [l for l in legs if "buy" not in l.get("instrument", "").lower()]
@@ -159,6 +256,16 @@ def _premium_collected(legs: list[dict[str, Any]], lot_size: int) -> float:
     return sum(l.get("targetPremium", MIN_PREMIUM_PER_LEG) for l in _short_legs(legs)) * lot_size
 
 
+def _outcome_from_pnl(pnl: float, *, intraday_breach: bool) -> str:
+    if intraday_breach and pnl > 0:
+        pnl = min(pnl, NEUTRAL_BAND - 1)
+    if pnl > NEUTRAL_BAND:
+        return "PROFIT"
+    if pnl < -NEUTRAL_BAND:
+        return "LOSS"
+    return "NEUTRAL"
+
+
 def _calc_pnl(
     legs: list[dict[str, Any]],
     hedge_strike: int | None,
@@ -186,12 +293,16 @@ def _calc_pnl(
 
     intraday_breach = pe_intr_low > 0 or ce_intr_high > 0
     all_otm_close = pe_intr_close == 0 and ce_intr_close == 0
+    worst_short_mtm = max(pe_intr_low, pe_intr_close) + max(ce_intr_high, ce_intr_close)
     theta_mult: float | None = None
 
-    if intraday_breach:
-        short_mtm_worst = max(pe_intr_low, pe_intr_close) + max(ce_intr_high, ce_intr_close)
-        pnl = premium_in - short_mtm_worst - hedge_cost + max(hedge_val_low, hedge_val_close)
-        method = "intraday_breach"
+    if intraday_breach and all_otm_close:
+        stress_cost = worst_short_mtm * BREACH_STRESS_FACTOR
+        pnl = premium_in * BREACH_THETA_CAPTURE - hedge_cost * 0.5 - stress_cost
+        method = "intraday_breach_recovered"
+    elif intraday_breach:
+        pnl = premium_in - pe_intr_close - ce_intr_close - hedge_cost + max(hedge_val_low, hedge_val_close)
+        method = "intraday_breach_close_itm"
     elif all_otm_close:
         day_range = (high_spot - low_spot) / open_spot if open_spot else 0
         theta_mult = max(0.08, BASE_THETA_CAPTURE - day_range * 1.5)
@@ -201,12 +312,7 @@ def _calc_pnl(
         pnl = premium_in - pe_intr_close - ce_intr_close - hedge_cost + hedge_val_close
         method = "intrinsic_at_close"
 
-    if pnl > NEUTRAL_BAND:
-        outcome = "PROFIT"
-    elif pnl < -NEUTRAL_BAND:
-        outcome = "LOSS"
-    else:
-        outcome = "NEUTRAL"
+    outcome = _outcome_from_pnl(pnl, intraday_breach=intraday_breach)
 
     return {
         "premiumCollected": round(premium_in, 0),
@@ -249,23 +355,29 @@ def _fetch_nifty_day(target: date) -> dict[str, float] | None:
 
 
 def validate_pending(as_of: date | None = None) -> list[dict[str, Any]]:
-    """Validate predictions whose validation session has completed by as_of."""
     as_of = as_of or date.today()
+    prune_legacy_predictions()
     _ensure_trade_log()
     results: list[dict[str, Any]] = []
 
-    for path in _prediction_paths():
+    for path in _canonical_prediction_paths():
         with path.open(encoding="utf-8") as f:
             pred = json.load(f)
-
-        if pred.get("validated"):
-            continue
 
         pred_date = date.fromisoformat(pred["predictionDate"])
         run_kind = pred.get("runKind", "eod")
         validate_date = _validate_date(pred_date, run_kind)
 
         if as_of < validate_date:
+            continue
+
+        if pred.get("validated") or _is_already_logged(
+            pred_date.isoformat(), run_kind, validate_date.isoformat()
+        ):
+            if not pred.get("validated"):
+                pred["validated"] = True
+                with path.open("w", encoding="utf-8") as f:
+                    json.dump(pred, f, indent=2)
             continue
 
         ohlc = _fetch_nifty_day(validate_date)
@@ -317,8 +429,9 @@ def validate_pending(as_of: date | None = None) -> list[dict[str, Any]]:
             ),
         }
 
-        with TRADE_LOG_CSV.open("a", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow([row[k] for k in LOG_HEADER])
+        rows = _load_trade_log_rows()
+        rows.append({k: str(v) for k, v in row.items()})
+        _write_trade_log_rows(rows)
 
         pred["validated"] = True
         pred["validation"] = {**row, **pnl_info}
@@ -333,7 +446,7 @@ def validate_pending(as_of: date | None = None) -> list[dict[str, Any]]:
 
 def _pending_predictions() -> list[dict[str, Any]]:
     pending: list[dict[str, Any]] = []
-    for path in _prediction_paths():
+    for path in _canonical_prediction_paths():
         with path.open(encoding="utf-8") as f:
             pred = json.load(f)
         if pred.get("validated"):
@@ -342,7 +455,7 @@ def _pending_predictions() -> list[dict[str, Any]]:
         run_kind = pred.get("runKind", "eod")
         pending.append(
             {
-                "id": _prediction_id(pred, path),
+                "id": _prediction_id(pred),
                 "predictionDate": pred_date.isoformat(),
                 "runKind": run_kind,
                 "validateOn": _validate_date(pred_date, run_kind).isoformat(),
@@ -354,11 +467,7 @@ def _pending_predictions() -> list[dict[str, Any]]:
 
 
 def _export_trade_log_json() -> None:
-    rows: list[dict[str, str]] = []
-    if TRADE_LOG_CSV.exists():
-        with TRADE_LOG_CSV.open(encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            rows = list(reader)
+    rows = _dedupe_trade_rows(_load_trade_log_rows())
 
     summary = {
         "totalTrades": len(rows),
@@ -383,13 +492,14 @@ def _export_trade_log_json() -> None:
 
 
 def rebuild_trade_log_from_predictions(as_of: date | None = None) -> None:
-    """Reset trade log and re-validate all predictions (after logic/schema changes)."""
     as_of = as_of or date.today()
+    prune_legacy_predictions()
+
     if TRADE_LOG_CSV.exists():
         TRADE_LOG_CSV.unlink()
     _ensure_trade_log()
 
-    for path in _prediction_paths():
+    for path in _canonical_prediction_paths():
         with path.open(encoding="utf-8") as f:
             pred = json.load(f)
         pred["validated"] = False

@@ -1,0 +1,4 @@
+prediction_date,run_kind,validate_date,signal,entry_spot,session_open,exit_close,day_low,day_high,premium_collected,pnl_inr,outcome,legs_count,intraday_breach,notes
+2026-08-28,eod,2026-08-31,QUALIFIED_SETUP,24175.65,24117.55,24080.4,23993.6,24128.7,24000,4298.0,PROFIT,8,False,method=theta_decay_otm; pred_spot=24175.65; all_otm_close=True; theta_mult=0.192
+2026-08-31,eod,2026-09-01,QUALIFIED_SETUP,24050.25,24077.55,24055.8,23952.55,24143.15,24000,4215.0,PROFIT,8,False,method=theta_decay_otm; pred_spot=24050.25; all_otm_close=True; theta_mult=0.188
+2026-09-01,eod,2026-09-02,QUALIFIED_SETUP,24055.8,23858.0,23914.45,23786.8,23914.45,24000,-3398.0,LOSS,8,True,method=intraday_breach_recovered; pred_spot=24055.8; all_otm_close=True; theta_mult=None

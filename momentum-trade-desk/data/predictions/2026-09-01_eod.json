@@ -1,7 +1,7 @@
 {
   "predictionDate": "2026-09-01",
   "savedAt": "2026-09-01 17:12:15 IST",
-  "validated": false,
+  "validated": true,
   "action": "QUALIFIED_SETUP",
   "spot": 24055.8,
   "premiumPerLeg": 50,
@@ -79,5 +79,26 @@
   },
   "regime": "NEUTRAL",
   "gapPoints": -2.85,
-  "runKind": "eod"
+  "runKind": "eod",
+  "validation": {
+    "prediction_date": "2026-09-01",
+    "run_kind": "eod",
+    "validate_date": "2026-09-02",
+    "signal": "QUALIFIED_SETUP",
+    "entry_spot": "24055.8",
+    "session_open": "23858.0",
+    "exit_close": "23914.45",
+    "day_low": "23786.8",
+    "day_high": "23914.45",
+    "premium_collected": "24000",
+    "pnl_inr": "-3398.0",
+    "outcome": "LOSS",
+    "legs_count": "8",
+    "intraday_breach": "True",
+    "notes": "method=intraday_breach_recovered; pred_spot=24055.8; all_otm_close=True; theta_mult=None",
+    "premiumCollected": 24000,
+    "pnlInr": -3398,
+    "method": "intraday_breach_recovered",
+    "intradayBreach": true
+  }
 }
